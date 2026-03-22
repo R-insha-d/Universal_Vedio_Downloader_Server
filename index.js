@@ -7,10 +7,12 @@ const os = require('os');
 const ffmpegPath = require('ffmpeg-static');
 const { execSync, spawn } = require('child_process');
 
-let ffBinary = path.join(process.cwd(), 'ffmpeg.exe');
-let ytdlpBin = path.join(process.cwd(), 'node_modules', 'youtube-dl-exec', 'bin', 'yt-dlp.exe');
+let ffBinary, ytdlpBin;
 
 if (process.platform === 'win32') {
+  ffBinary = path.join(process.cwd(), 'ffmpeg.exe');
+  ytdlpBin = path.join(process.cwd(), 'node_modules', 'youtube-dl-exec', 'bin', 'yt-dlp.exe');
+  
   try {
     // Resolve absolute path first
     if (!fs.existsSync(ytdlpBin)) {
@@ -23,6 +25,20 @@ if (process.platform === 'win32') {
     ytdlpBin = execSync(`for %I in ("${ytdlpBin}") do @echo %~sI`, { shell: 'cmd.exe' }).toString().trim().split('\n').pop().trim();
   } catch (e) {
     console.error("Short path conversion failed:", e.message);
+  }
+} else {
+  // Linux/Unix environment (like Render)
+  ffBinary = ffmpegPath;
+  ytdlpBin = path.join(process.cwd(), 'node_modules', 'yt-dlp', 'bin', 'yt-dlp');
+  
+  // If yt-dlp doesn't exist, try to use the system yt-dlp
+  if (!fs.existsSync(ytdlpBin)) {
+    try {
+      execSync('which yt-dlp', { stdio: 'ignore' });
+      ytdlpBin = 'yt-dlp';
+    } catch (e) {
+      console.error('yt-dlp not found. Please install yt-dlp on the system.');
+    }
   }
 }
 
