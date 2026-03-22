@@ -65,6 +65,11 @@ const runYtDlp = (url, options = {}, spawnOptions = {}) => {
   options.retries = 2;
   options.fragmentRetries = 2;
   
+  // Add options to bypass YouTube restrictions
+  options.cookiesFromBrowser = 'chrome';
+  options.extractorArgs = 'youtube:player_client=android';
+  options.noPlaylist = true;
+  
   for (const [key, value] of Object.entries(options)) {
     if (value === true) {
       args.push(key.length === 1 ? `-${key}` : `--${key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`)}`);
